@@ -63,6 +63,7 @@ class TypingTest:
         self.precomp_wc = []
         self.buffer = [""] 
         self.start_time = 0.0
+        self.num_previous = 3
         
     def run(self):
         s = ""
@@ -98,6 +99,7 @@ class TypingTest:
                     self.col = 0
                     self.buffer.append(s)
                     s = ""
+                    self.out_diff_line(s, self.row)
                     self.load_lines(self.row)
                     self.add_lines(self.test_lines[self.row:])
                 else:
@@ -114,10 +116,11 @@ class TypingTest:
                     self.col = 0
                     self.buffer.append(s)
                     s = ""
+                    self.out_diff_line(s, self.row)
                     self.load_lines(self.row)
                     self.add_lines(self.test_lines[self.row:])
-                self.scr.addstr(0, self.col, self.test_lines[self.row][self.col], self.c_white | curses.A_UNDERLINE)
-                self.scr.addstr(0, self.col+1, self.test_lines[self.row][self.col+1:], self.c_white)
+                self.scr.addstr(self.num_previous, self.col, self.test_lines[self.row][self.col], self.c_white | curses.A_UNDERLINE)
+                self.scr.addstr(self.num_previous, self.col+1, self.test_lines[self.row][self.col+1:], self.c_white)
             self.update_wpm_str(char) 
 
     def update_wpm_str(self, char):
@@ -142,13 +145,17 @@ class TypingTest:
             self.line_seeks.extend([pos for _ in wrapped])
 
     def out_diff_line(self, s, row):
+        for j in range(1,min(self.num_previous, len(self.buffer))+1):
+            for i in range(len(self.buffer[-j])):
+                good = self.buffer[-j][i] == self.test_lines[row-j][i]
+                self.scr.addstr(self.num_previous-j, i, self.test_lines[row-j][i], self.c_green if good else self.c_red)
         for i in range(len(s)):
             good = s[i] == self.test_lines[row][i]
-            self.scr.addstr(0, i, self.test_lines[row][i], self.c_green if good else self.c_red)
+            self.scr.addstr(self.num_previous, i, self.test_lines[row][i], self.c_green if good else self.c_red)
     
     def add_lines(self, lines):
-        for i, l in enumerate(lines[:self.main_lines]):
-            self.scr.addstr(i, 0, l, self.c_white)
+        for i, l in enumerate(lines[:self.main_lines-self.num_previous-1]):
+            self.scr.addstr(i+self.num_previous, 0, l, self.c_white)
     
     @property
     def main_lines(self):
