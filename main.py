@@ -5,6 +5,7 @@ import curses
 import time
 import textwrap
 import re
+import argparse
 
 KEY_BACKSPACE = 127
 CTRLD = 4
@@ -161,134 +162,14 @@ class TypingTest:
     def main_lines(self):
         return curses.LINES - 1
 def main():
-    
-    # if len(sys.argv) < 1:
-    #     raise Exception("requires file")
+    parser = argparse.ArgumentParser(
+            prog="typingtest",
+            description="commandline typing practice with custom text"
+            )
+    parser.add_argument('test_file')
+    args = parser.parse_args()
+    test_file = args.test_file
 
-    # test_file = Path(sys.argv[1])
-    # progress_file = test_file.parent / ("~" + test_file.name) 
-    # num_lines_per_test = 30
-    # last_pos = 0
-    # if progress_file.exists():
-    #     with open(progress_file, 'r') as pf:
-    #         val = pf.read()
-    #         if val.strip().isnumeric():
-    #             last_pos = int(val)
-    # print(f"Starting test from: {last_pos}")
-    # # get the end position in file
-    # with open(test_file, 'r') as tf:
-    #     tf.seek(0, io.SEEK_END)
-    #     end_pos = tf.tell()
-    # tf = open(test_file, 'r')
-    # tf.seek(last_pos)
-    # scr = curses.initscr()
-    # curses.halfdelay(10)
-    # curses.noecho()
-    # curses.start_color()
-    
-    # curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    # curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
-    # curses.init_pair(3, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
-    # curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_BLACK)
-    # C_GREEN = curses.color_pair(1)
-    # C_RED = curses.color_pair(2)
-    # C_MAGENTA = curses.color_pair(3)
-    # C_WHITE = curses.color_pair(4)
-    # row = 0
-    # col = 0
-    # def load_lines(test_lines:list[str], row, line_seeks:list[str]):
-    #     while len(test_lines) - row < curses.LINES - 1:
-    #         line = tf.readline()
-    #         if line.strip() == "":
-    #             continue
-    #         if 0 <= row-1 < len(line_seeks) and last_pos < line_seeks[row-1]:
-    #             with open(progress_file, 'w') as pf:
-    #                 pf.write(str(line_seeks[row-1]))
-    #         pos = tf.tell()
-    #         line = " ".join([w.strip() for w in line.split(' ') if w.strip() != ""])
-    #         wrapped = textwrap.wrap(line, width = curses.COLS, tabsize=4)
-    #         test_lines.extend(wrapped)
-    #         line_seeks.extend([pos for _ in wrapped])
-    # test_lines = []
-    # test_line_seeks = []
-    # load_lines(test_lines, row, test_line_seeks)        
-    # # create new window for stats at the bottom of the screen
-    # wpm_win = curses.newwin(1, curses.COLS, curses.LINES-1, 0)
-    # wpm = 0.0
-    # completed_word_count = 0
-    # wpm_win.addstr(0, 0, f"wpm: {wpm:3.2f} | completed: {last_pos/end_pos*100:3.1f}%", C_MAGENTA) 
-    # # create a pad for the test values
-    # # pad = curses.newpad()
-
-    # s = ""
-    # buffer = [""]
-    # precomp_wc = []
-    # start_time = time.time()
-    # def add_lines(lines, row):
-    #     for i, l in enumerate(lines):
-    #         scr.addstr(i, 0, l, C_WHITE)
-    # add_lines(test_lines[row:], row)
-    # skip_next = False
-    # while True:
-    #     char = scr.getch()
-    #     # scr.clear()
-    #     if char != curses.ERR:
-    #         if skip_next:
-    #             skip_next = False
-    #             continue
-    #         if char == KEY_BACKSPACE:
-    #             col -= 1
-    #             if col < 0 and row > 0:
-    #                 scr.clear()
-    #                 row -= 1
-    #                 add_lines(test_lines[row:], row)
-    #                 s = buffer.pop()[:-1]
-    #                 col = len(s) 
-    #             else:
-    #                 col = max(col, 0)
-    #                 s = s[:col]
-    #         elif char == CTRLD:
-    #             # skip next 10 lines 
-    #             skip_next = True
-    #             # increment the line
-    #             scr.clear()
-    #             row += 1
-    #             if row == len(test_lines):
-    #                 return
-    #             col = 0
-    #             buffer.append(s)
-    #             s = ""
-    #             load_lines(test_lines, row, test_line_seeks)
-    #             add_lines(test_lines[row:], row)
-    #         else:
-    #             s += chr(char)
-    #             col += 1
-    #         for i in range(len(s)):
-    #             good = s[i] == test_lines[row][i]
-    #             scr.addstr(0, i, test_lines[row][i], C_GREEN if good else C_RED)
-    #         if col == len(test_lines[row]):
-    #             skip_next = True
-    #             # increment the line
-    #             scr.clear()
-    #             row += 1
-    #             if row == len(test_lines):
-    #                 return
-    #             col = 0
-    #             buffer.append(s)
-    #             s = ""
-    #             load_lines(test_lines, row, test_line_seeks)
-    #             add_lines(test_lines[row:], row)
-    #         scr.addstr(0, col, test_lines[row][col], C_WHITE | curses.A_UNDERLINE)
-    #         scr.addstr(0, col+1, test_lines[row][col+1:], C_WHITE)
-    #     wpm_win.addstr(0, 0, f"wpm: {wpm:3.2f} | completed: {last_pos/end_pos*100:3.1f}% | {char:4d}", C_MAGENTA) 
-    #     # create a pad for the test values
-    #     wpm_win.refresh()
-    #     wpm = 60 * (effective_word_count(buffer, test_lines[:row], precomp_wc)) / (time.time() - start_time)
-
-    if len(sys.argv) < 1:
-        raise Exception("requires file")
-
-    test_file = Path(sys.argv[1])
     tt = TypingTest(test_file)
     tt.run()
 
